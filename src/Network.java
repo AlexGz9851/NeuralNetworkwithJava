@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Random;
 
+import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
+
 public class Network {
 	
 //	private Layer[] layers;
@@ -10,13 +12,6 @@ public class Network {
 	
 	
 	public Network(Integer[] sizes) {
-		// TODO: try to change the code to a layer class
-//		this.layers = new Layer[sizes.length];
-//		for(int i =0; i<sizes.length; i++)
-//		{
-//			layers[i] = new Layer(sizes[i]);
-//		}
-		
 		
 		// Initializing biases
 		// Creates an array that stores the biases (an array of doubles)
@@ -65,7 +60,7 @@ public class Network {
 			}
 		}
 		for(double[][][] batch: batches) {
-			updateBatch(batch, etha);
+			updateMiniBatch(batch, etha);
 		}
 	}
 	
@@ -83,18 +78,87 @@ public class Network {
 		}
 	}
 	
-	private void updateBatch(double[][][] batch, double etha) {
-		// TODO
+	private void updateMiniBatch(double[][][] miniBatch, double etha) {
+		double coef=etha/(double)(miniBatch.length);
+		double[][][] nablaW;
+		double[][] nablaB;
+		
+		nablaW = Utils.zeros3D(this.weights.length, this.weights[0].length,this.weights[0][0].length); 
+		nablaB = Utils.zeros2D(this.biases.length, this.biases[0].length);
+		
+		for (int i=0;i<miniBatch.length;i++) {
+			backProp(miniBatch[i][0], miniBatch[i][1],nablaW,nablaB);
+		}
+		
+		
+		for(int i = 0; i < this.weights.length; i++) {
+			for(int j = 0; j < this.weights[i].length; j++) {
+				this.biases[i][j]-=coef*nablaB[i][j];
+				for(int k = 0; k < this.weights[i][j].length; k++) {
+					this.weights[i][j][k]-=coef *nablaW[i][j][k];
+				}
+			}
+		}
 	}
 	
-	private void backProp(double[] x, double[] y) {
+	private void backProp(double[] x, double[] y, double[][][] nablaW, double[][] nablaB) {
+
+		double[][][] deltaNablaW;
+		double[][] deltaNablaB, wTrans;
+		//se reemplazo deltaW y deltaB de este metodo por deltaNablaW deltaNablaB, para poder pasar por referencia nablaW y nablaB de update_mini_batch
+		deltaNablaW = Utils.zeros3D(this.weights.length, this.weights[0].length,this.weights[0][0].length); 
+		deltaNablaB = Utils.zeros2D(this.biases.length, this.biases[0].length);
+		
 		ArrayList<double[]> activations = new ArrayList<>();
 		ArrayList<double[]> zs = new ArrayList<>();
-		double[] activation = x;
+		double[] z,
+				 delta,
+				 sp,
+				 activation;
 		
-		activations.add(x);
-		// TODO
+		activation=x;
+		activations.add(activation);
 		
+		for(int i = 0; i < this.weights.length; i++) {
+			z=Utils.sumArray(Utils.dotProduct(activation,this.weights[i]),this.biases[i]);
+			zs.add(z);
+			activation=Utils.sigmoid(z);
+			activations.add(activation);
+		}
+		delta=Utils.elementWiseMultipArr(
+				costDerivative(activations.get(activations.size()-1), y),
+				Utils.sigmoidPrime(zs.get(zs.size()-1)));
+		deltaNablaB[deltaNablaB.length-1] = delta;
+		deltaNablaW[deltaNablaW.length-1] = Utils.vectorMultTo2D(delta,activations.get(activations.size()-2));
+		
+		for(int ll =2;ll<this.size;ll++) {
+			z = zs.get(zs.size()-ll);
+			sp = Utils.sigmoidPrime(z);
+			wTrans=Utils.trasponerMatrix(this.weights[this.weights.length+1-ll]);
+			delta = Utils.elementWiseMultipArr(Utils.dotProduct(delta, wTrans), sp);
+			deltaNablaB[deltaNablaB.length-ll] = delta;
+			deltaNablaW[deltaNablaW.length-ll] = Utils.vectorMultTo2D(delta, activations.get(activations.size()-ll-1));
+			//en vez de retornar nablaB y nablaW aqui, los modifico en este metodo.
+			//el procesamiento es secuencial.
+			// from update_mini_batch
+			//	        delta_nabla_b, delta_nabla_w = self.backprop(x, y)
+			//	        nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
+			//	        nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
+			
+			for(int i=0;i<nablaB.length;i++) {
+				nablaB[i] = Utils.sumArray(nablaB[i], deltaNablaB[i]);
+			}
+			for(int i=0;i<nablaW.length;i++) {
+				for(int j=0;j<nablaW[i].length;j++) {
+					nablaW[i][j]=Utils.sumArray(nablaW[i][j], deltaNablaW[i][j]);
+				}
+			}
+			
+			
+		}
+	}
+	private double [] costDerivative(double[] outputActivations,double[] y) {
+		return Utils.substractArray(outputActivations, y);
 	}
 	
 	private int evaluateTest(double[][][] testData) {
@@ -126,7 +190,17 @@ public class Network {
 			}
 			return answer;
 		}
-		
+		public static double [][] vectorMultTo2D(double[] a, double[] b) {
+			double[][] c;
+			c= new double[a.length][];
+			for(int i=0;i<a.length;i++) {
+				c[i] = new double[b.length];
+				for(int j=0;j<b.length;j++) {
+					c[i][j] = a[i]*b[j];
+				}
+			}
+			return c;
+		}
 		public static double[] sigmoidPrime(double[] z) {
 			double answer[] = new double[z.length];
 			for(int i =0; i<z.length; i++) {
@@ -160,7 +234,23 @@ public class Network {
 			}
 			return data;
 		}
-		
+		public static double[][] trasponerMatrix(double[][] matrix){
+			double[][] res;
+			res= new double[matrix[0].length][];
+			for(int j=0;j<matrix[0].length;j++) {
+				res[j] = new double[matrix.length];
+				for(int i=0;i<matrix.length;i++) {
+					res[j][i] = matrix[i][j];
+				}
+			}
+			return res;
+		}
+		public static double[] multiplyConstant2arr(double[] a, double b) {
+			for(int i = 0; i<a.length; i++) {
+				a[i]*=b;
+			}
+			return a;
+		}
 		public static double[] sumArray(double[] a, double b) {
 			for(int i = 0; i<a.length; i++) {
 				a[i]+=b;
@@ -176,7 +266,43 @@ public class Network {
 			}
 			return a;
 		}
-
+		public static double[] substractArray(double[] a, double[] b) throws IllegalArgumentException {
+			if(a.length!=b.length)
+				throw new IllegalArgumentException("Please provide arrays of the same size");
+			for(int i = 0; i<a.length; i++) {
+				a[i]-=b[i];
+			}
+			return a;
+		}
+		public static double[] elementWiseMultipArr(double[] a, double[] b) throws IllegalArgumentException {
+			if(a.length!=b.length)
+				throw new IllegalArgumentException("Please provide arrays of the same size");
+			for(int i = 0; i<a.length; i++) {
+				a[i]*=b[i];
+			}
+			return a;
+		}
+		public static double[][][] zeros3D(int iMax, int jMax, int kMax){
+			double[][][] res = new double[iMax][][];
+			for(int i = 0; i < iMax; i++) {
+				res[i]=zeros2D(jMax, kMax);
+			}
+			return res;
+		}
+		public static double[][] zeros2D(int iMax, int jMax){
+			double[][] res = new double[iMax][];
+			for(int i = 0; i < iMax; i++) {
+				res[i]=zeros1D(jMax);
+			}
+			return res;
+		}
+		public static double [] zeros1D(int iMax) {
+			double[] res= new double[iMax];
+			for(int i = 0; i < iMax; i++) {
+				res[i]=0;
+			}
+			return res;
+		}
 		public static int maxPos(double[] data) {
 			int max = 0;
 			for(int i = 1; i < data.length; i++) {
