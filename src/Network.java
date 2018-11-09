@@ -51,9 +51,8 @@ public class Network {
 	
 	private void SGD(double[][][] trainingData, int batchSize, double etha) {
 		Utils.randomShuffle(trainingData);
-		double[][][][] batches = new double[trainingData.length/batchSize][][][];
-		for(int j = 0; j<batches.length; j+=batchSize) {
-			batches[j] = new double[batchSize][][];
+		double[][][][] batches = new double[trainingData.length/batchSize][batchSize][][];
+		for(int j = 0; j<batches.length; j++) {
 			for(int k = 0; k<batchSize; k++) {
 				batches[j][k]=trainingData[k+j*batchSize];
 			}
@@ -73,7 +72,7 @@ public class Network {
 	public void SGD(double[][][] trainingData, int epochs, int batchSize, double etha, double[][][] testData) {
 		for(int i=0; i<epochs; i++) {
 			SGD(trainingData, batchSize, etha);
-			System.out.println(String.format("Epoch %i: %i / %i", i, evaluateTest(testData), testData.length));
+			System.out.println(String.format("Epoch %d: %d / %d", i, evaluateTest(testData), testData.length));
 		}
 	}
 	
@@ -82,8 +81,8 @@ public class Network {
 		double[][][] nablaW;
 		double[][] nablaB;
 		
-		nablaW = Utils.zeros3D(this.weights.length, this.weights[0].length,this.weights[0][0].length); 
-		nablaB = Utils.zeros2D(this.biases.length, this.biases[0].length);
+		nablaW = Utils.zeros3D(this.weights); 
+		nablaB = Utils.zeros2D(this.biases);
 		
 		for (int i=0;i<miniBatch.length;i++) {
 			backProp(miniBatch[i][0], miniBatch[i][1],nablaW,nablaB);
@@ -107,8 +106,8 @@ public class Network {
 		double[][][] deltaNablaW;
 		double[][] deltaNablaB, wTrans;
 		//se reemplazo deltaW y deltaB de este metodo por deltaNablaW deltaNablaB, para poder pasar por referencia nablaW y nablaB de update_mini_batch
-		deltaNablaW = Utils.zeros3D(this.weights.length, this.weights[0].length,this.weights[0][0].length); 
-		deltaNablaB = Utils.zeros2D(this.biases.length, this.biases[0].length);
+		deltaNablaW = Utils.zeros3D(this.weights); 
+		deltaNablaB = Utils.zeros2D(this.biases);
 		
 		ArrayList<double[]> activations = new ArrayList<>();
 		ArrayList<double[]> zs = new ArrayList<>();
@@ -190,9 +189,9 @@ public class Network {
 		images = MnistReader.getDoubleImages("t10k-images.idx3-ubyte");
 		double[][][] testData = new double[labels.length][2][];
 		for(int i = 0; i<labels.length; i++) {
-			trainingData[i][0]=images[i];
-			trainingData[i][1]= new double[1];
-			trainingData[i][1][0] = labels[i];			
+			testData[i][0]=images[i];
+			testData[i][1]= new double[1];
+			testData[i][1][0] = labels[i];			
 		}
 		net.SGD(trainingData, 30, 10, 100, testData);
 	}
@@ -316,20 +315,25 @@ public class Network {
 			}
 			return a;
 		}
-		public static double[][][] zeros3D(int iMax, int jMax, int kMax){
-			double[][][] res = new double[iMax][][];
-			for(int i = 0; i < iMax; i++) {
-				res[i]=zeros2D(jMax, kMax);
+		public static double[][][] zeros3D(double[][][] size){
+			double[][][] res = new double[size.length][][];
+			for(int i = 0; i < size.length; i++) {
+				res[i]= new double[size[i].length][];
+				for(int j = 0; j<size[i].length; j++) {
+					res[i][j]= new double[size[i][j].length];
+				}
 			}
 			return res;
 		}
-		public static double[][] zeros2D(int iMax, int jMax){
-			double[][] res = new double[iMax][];
-			for(int i = 0; i < iMax; i++) {
-				res[i]=zeros1D(jMax);
+		
+		public static double[][] zeros2D(double[][] size){
+			double[][] res = new double[size.length][];
+			for(int i = 0; i < size.length; i++) {
+				res[i]= new double[size[i].length];
 			}
 			return res;
 		}
+		
 		public static double [] zeros1D(int iMax) {
 			double[] res= new double[iMax];
 			for(int i = 0; i < iMax; i++) {
