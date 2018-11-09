@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Random;
 
-import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
 
 public class Network {
 	
@@ -176,10 +175,24 @@ public class Network {
 	}
 	
 	public static void main(String... args) {
-		Network net = new Network(new Integer[]{2,3,10});
-		double[] a = new double[] {.5,.4};
-		a = net.feedforward(a);
-		System.out.println("a");
+		Network net = new Network(new Integer[]{784,100,10});
+		double[] labels = MnistReader.getLabels("train-labels.idx1-ubyte");
+		double[][] images = MnistReader.getDoubleImages("train-images.idx3-ubyte");
+		double[][][] trainingData = new double[labels.length][2][];
+		for(int i = 0; i<labels.length; i++) {
+			trainingData[i][0]=images[i];
+			trainingData[i][1]= new double[1];
+			trainingData[i][1][0] = labels[i];			
+		}
+		labels = MnistReader.getLabels("t10k-labels.idx1-ubyte");
+		images = MnistReader.getDoubleImages("t10k-images.idx3-ubyte");
+		double[][][] testData = new double[labels.length][2][];
+		for(int i = 0; i<labels.length; i++) {
+			trainingData[i][0]=images[i];
+			trainingData[i][1]= new double[1];
+			trainingData[i][1][0] = labels[i];			
+		}
+		net.SGD(trainingData, 30, 10, 100, testData);
 	}
 	
 	private static class Utils {
