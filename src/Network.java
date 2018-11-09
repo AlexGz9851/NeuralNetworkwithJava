@@ -99,9 +99,11 @@ public class Network {
 			}
 		}
 	}
-	
-	private void backProp(double[] x, double[] y, double[][][] nablaW, double[][] nablaB) {
 
+	private void backProp(double[] x, double[] y, double[][][] nablaW, double[][] nablaB) {
+		double[] yTransf = new double[10];
+		yTransf=Utils.transformToArrIntY(y);
+		
 		double[][][] deltaNablaW;
 		double[][] deltaNablaB, wTrans;
 		//se reemplazo deltaW y deltaB de este metodo por deltaNablaW deltaNablaB, para poder pasar por referencia nablaW y nablaB de update_mini_batch
@@ -125,7 +127,7 @@ public class Network {
 			activations.add(activation);
 		}
 		delta=Utils.elementWiseMultipArr(
-				costDerivative(activations.get(activations.size()-1), y),
+				costDerivative(activations.get(activations.size()-1), yTransf),
 				Utils.sigmoidPrime(zs.get(zs.size()-1)));
 		deltaNablaB[deltaNablaB.length-1] = delta;
 		deltaNablaW[deltaNablaW.length-1] = Utils.vectorMultTo2D(delta,activations.get(activations.size()-2));
@@ -196,6 +198,25 @@ public class Network {
 	}
 	
 	private static class Utils {
+		public static double[] transformToArrIntY(double[] y) {
+			//This is a kind of strange function at first sight. 
+			//why transform an array of doubles into an array of doubles?
+			//because this is not a real array, es an integer casted to a double inside an array.
+			// that means, in reality, this "double array" is an integer.
+			// We'll tansform this integer into a array of doubles representation :for instance
+			//from 5.0 to --> [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+			int yInt=(int)y[0];
+			double[] res= new double[10];
+			for(int i=0;i<res.length;i++) {
+				if(i==yInt) {
+					res[i] = 1.0;
+				}else {
+					res[i] = 0.0;
+				}
+			}
+			return res;
+		}
+		
 		public static double[] sigmoid(double[] z) {
 			double answer[] = new double[z.length];
 			for(int i =0; i<z.length; i++) {
