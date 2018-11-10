@@ -11,7 +11,6 @@ public class Network {
 	
 	
 	public Network(Integer[] sizes) {
-		
 		// Initializing biases
 		// Creates an array that stores the biases (an array of doubles)
 		// for each layer of the network starting in the second one
@@ -22,7 +21,7 @@ public class Network {
 		for(int i = 0; i < this.size-1; i++) {
 			this.biases[i] = new double[sizes[i+1]];
 			for(int j = 0; j < sizes[i+1]; j++) {
-				this.biases[i][j]=Math.random();
+				this.biases[i][j]=Math.random()*2-1;
 			}
 		}
 		
@@ -36,7 +35,7 @@ public class Network {
 			for(int j = 0; j < sizes[i+1]; j++) {
 				this.weights[i][j] = new double[sizes[i]];
 				for(int k = 0; k < sizes[i]; k++) {
-					this.weights[i][j][k]=Math.random();
+					this.weights[i][j][k]=Math.random()*2-1;
 				}
 			}
 		}
@@ -44,7 +43,7 @@ public class Network {
 	
 	private double[] feedforward(double[] activation) {
 		for(int i = 0; i<this.size-1; i++) {
-			activation = Utils.sigmoid(Utils.sumArray(this.biases[i],Utils.dotProduct(activation, weights[i])));
+			activation = Utils.sigmoid(Utils.sumArray(Utils.dotProduct(activation, weights[i]),this.biases[i]));
 		}
 		return activation;
 	}
@@ -69,6 +68,15 @@ public class Network {
 		}
 	}
 	
+	
+	/**
+	 * 
+	 * @param trainingData
+	 * @param epochs
+	 * @param batchSize
+	 * @param etha
+	 * @param testData
+	 */
 	public void SGD(double[][][] trainingData, int epochs, int batchSize, double etha, double[][][] testData) {
 		for(int i=0; i<epochs; i++) {
 			SGD(trainingData, batchSize, etha);
@@ -176,7 +184,7 @@ public class Network {
 	}
 	
 	public static void main(String... args) {
-		Network net = new Network(new Integer[]{784,100,10});
+		
 		double[] labels = MnistReader.getLabels("train-labels.idx1-ubyte");
 		double[][] images = MnistReader.getDoubleImages("train-images.idx3-ubyte");
 		double[][][] trainingData = new double[labels.length][2][];
@@ -193,7 +201,8 @@ public class Network {
 			testData[i][1]= new double[1];
 			testData[i][1][0] = labels[i];			
 		}
-		net.SGD(trainingData, 30, 10, 100, testData);
+		Network net = new Network(new Integer[]{784,100,10});
+		net.SGD(trainingData, 30, 10, 3, testData);
 	}
 	
 	private static class Utils {
@@ -294,26 +303,29 @@ public class Network {
 		public static double[] sumArray(double[] a, double[] b) throws IllegalArgumentException {
 			if(a.length!=b.length)
 				throw new IllegalArgumentException("Please provide arrays of the same size");
+			double[] sum = new double[a.length];
 			for(int i = 0; i<a.length; i++) {
-				a[i]+=b[i];
+				sum[i]=a[i]+b[i];
 			}
-			return a;
+			return sum;
 		}
 		public static double[] substractArray(double[] a, double[] b) throws IllegalArgumentException {
 			if(a.length!=b.length)
 				throw new IllegalArgumentException("Please provide arrays of the same size");
+			double[] sub = new double[a.length];
 			for(int i = 0; i<a.length; i++) {
-				a[i]-=b[i];
+				sub[i]=a[i]-b[i];
 			}
-			return a;
+			return sub;
 		}
 		public static double[] elementWiseMultipArr(double[] a, double[] b) throws IllegalArgumentException {
 			if(a.length!=b.length)
 				throw new IllegalArgumentException("Please provide arrays of the same size");
+			double[] mult = new double[a.length];
 			for(int i = 0; i<a.length; i++) {
-				a[i]*=b[i];
+				mult[i]=a[i]*b[i];
 			}
-			return a;
+			return mult;
 		}
 		public static double[][][] zeros3D(double[][][] size){
 			double[][][] res = new double[size.length][][];
