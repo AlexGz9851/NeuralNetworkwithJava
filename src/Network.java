@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.Random;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 
 public class Network {
@@ -8,9 +10,11 @@ public class Network {
 	private double[][][] weights;
 	private double[][] biases;
 	private int size;
+	private int[] netShape;
 	
 	
-	public Network(Integer[] sizes) {
+	public Network(int[] sizes) {
+		this.netShape=sizes;
 		// Initializing biases
 		// Creates an array that stores the biases (an array of doubles)
 		// for each layer of the network starting in the second one
@@ -182,6 +186,51 @@ public class Network {
 	public int evaluate(double[] data) {
 		return Utils.maxPos(this.feedforward(data));
 	}
+	public void saveNetwork(String name) {//name with extension "example.txt"
+		saveNetwork(name,"C:\\Users\\Alex\\Desktop");
+	}
+	public void saveNetwork(String name,String path) {
+		JsonObject netJson = createJsonNet();
+		//TODO 
+		
+	}
+	public JsonObject createJsonNet() {
+		JsonObject jsonObj = new JsonObject();
+		JsonArray wJson,bJson, wJson2D,
+				  wJson3D,bJson2D, netShapeJson;
+		netShapeJson= new JsonArray();
+		wJson= new JsonArray();
+		bJson= new JsonArray();
+		
+		for(int i = 0; i < this.netShape.length; i++) {
+			netShapeJson.add(netShape[i]);
+		}
+		for (int i = 0; i < this.weights.length; i++) {
+			wJson2D = new JsonArray();
+			for(int j=0;j<this.weights[0].length;j++) {
+				wJson3D = new JsonArray();
+				for(int k=0;k<this.weights[0][0].length;k++) {
+					wJson3D.add(this.weights[i][j][k]);
+				}
+				wJson2D.add(wJson3D);
+			}
+			wJson.add(wJson2D);
+		}
+		
+		for (int i = 0; i < this.biases.length; i++) {
+			bJson2D = new JsonArray();
+			for(int j=0;j<this.biases[0].length;j++) {
+				bJson2D.add(this.biases[i][j]);
+			}
+			bJson.add(bJson2D);
+		}
+		//Add someMoreInformationAboutNet
+		jsonObj.add("shape", netShapeJson);
+		jsonObj.add("weights", wJson);
+		jsonObj.add("biases", bJson);
+		
+		return jsonObj;
+	}
 	
 	public static void main(String... args) {
 		
@@ -201,7 +250,7 @@ public class Network {
 			testData[i][1]= new double[1];
 			testData[i][1][0] = labels[i];			
 		}
-		Network net = new Network(new Integer[]{784,100,10});
+		Network net = new Network(new int[]{784,100,10});
 		net.SGD(trainingData, 30, 10, 3, testData);
 	}
 	
