@@ -1,7 +1,20 @@
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Random;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import javax.imageio.ImageIO;
 
 
 public class Network {
@@ -13,7 +26,7 @@ public class Network {
 	private int[] netShape;
 	
 	
-	public Network(int[] sizes) {
+	private void createNetwork(int[] sizes) {
 		this.netShape=sizes;
 		// Initializing biases
 		// Creates an array that stores the biases (an array of doubles)
@@ -65,23 +78,14 @@ public class Network {
 		}
 	}
 	
-	public void SGD(double[][][] trainingData, int epochs, int batchSize, double etha) {
+	private void SGD(double[][][] trainingData, int epochs, int batchSize, double etha) {
 		for(int i=0; i<epochs; i++) {
 			SGD(trainingData, batchSize, etha);
 			System.out.println(String.format("Epoch %i completed", i));
 		}
 	}
 	
-	
-	/**
-	 * 
-	 * @param trainingData
-	 * @param epochs
-	 * @param batchSize
-	 * @param etha
-	 * @param testData
-	 */
-	public void SGD(double[][][] trainingData, int epochs, int batchSize, double etha, double[][][] testData) {
+	private void SGD(double[][][] trainingData, int epochs, int batchSize, double etha, double[][][] testData) {
 		for(int i=0; i<epochs; i++) {
 			SGD(trainingData, batchSize, etha);
 			System.out.println(String.format("Epoch %d: %d / %d", i, evaluateTest(testData), testData.length));
@@ -183,56 +187,49 @@ public class Network {
 		return cont;
 	}
 	
-	public int evaluate(double[] data) {
+	private int evaluate(double[] data) {
 		return Utils.maxPos(this.feedforward(data));
 	}
-	public void saveNetwork(String name) {//name with extension "example.txt"
-		saveNetwork(name,"C:\\Users\\Alex\\Desktop");
+	public void saveNetwork(String nameFile) {//name with extension "example.txt"
+		saveNetwork(nameFile,"src");
 	}
-	public void saveNetwork(String name,String path) {
+	public void saveNetwork(String nameFile,String path) {
 		JsonObject netJson = createJsonNet();
-		//TODO 
-		
-	}
-	public JsonObject createJsonNet() {
-		JsonObject jsonObj = new JsonObject();
-		JsonArray wJson,bJson, wJson2D,
-				  wJson3D,bJson2D, netShapeJson;
-		netShapeJson= new JsonArray();
-		wJson= new JsonArray();
-		bJson= new JsonArray();
-		
-		for(int i = 0; i < this.netShape.length; i++) {
-			netShapeJson.add(netShape[i]);
-		}
-		for (int i = 0; i < this.weights.length; i++) {
-			wJson2D = new JsonArray();
-			for(int j=0;j<this.weights[0].length;j++) {
-				wJson3D = new JsonArray();
-				for(int k=0;k<this.weights[0][0].length;k++) {
-					wJson3D.add(this.weights[i][j][k]);
-				}
-				wJson2D.add(wJson3D);
-			}
-			wJson.add(wJson2D);
+		try {
+			FileWriter fr = new FileWriter(path+"\\"+nameFile);
+			PrintWriter pw= new PrintWriter (fr);
+			pw.print(netJson);
+			pw.close();
+			fr.close();
+		}catch(IOException e){
+			System.out.println("Algo pasó. No se pudo guardar la red neuronal entrenada.");
 		}
 		
-		for (int i = 0; i < this.biases.length; i++) {
-			bJson2D = new JsonArray();
-			for(int j=0;j<this.biases[0].length;j++) {
-				bJson2D.add(this.biases[i][j]);
-			}
-			bJson.add(bJson2D);
-		}
-		//Add someMoreInformationAboutNet
-		jsonObj.add("shape", netShapeJson);
-		jsonObj.add("weights", wJson);
-		jsonObj.add("biases", bJson);
 		
-		return jsonObj;
+		
 	}
 	
-	public static void main(String... args) {
+	public double[] guess(double[] image) {
+
+		ArrayList<double[]> activations = new ArrayList<>();
+		ArrayList<double[]> zs = new ArrayList<>();
+		double[] z,
+				 activation;
+		
+		activation=image;
+		activations.add(activation);
+		
+		for(int i = 0; i < this.weights.length; i++) {
+			z=Utils.sumArray(Utils.dotProduct(activation,this.weights[i]),this.biases[i]);
+			zs.add(z);
+			activation=Utils.sigmoid(z);
+			activations.add(activation);
+		}
+		return activation;
+	}
+	
+	public void start( int epochs, int batchSize, double etha,  int[] altShape ) {
+		this.createNetwork(altShape);
 		
 		double[] labels = MnistReader.getLabels("train-labels.idx1-ubyte");
 		double[][] images = MnistReader.getDoubleImages("train-images.idx3-ubyte");
@@ -250,11 +247,177 @@ public class Network {
 			testData[i][1]= new double[1];
 			testData[i][1][0] = labels[i];			
 		}
-		Network net = new Network(new int[]{784,100,10});
-		net.SGD(trainingData, 30, 10, 3, testData);
+		
+		this.SGD(trainingData, epochs, batchSize, etha, testData);
+	}
+	public void start( int epochs, int batchSize, double etha,int[] altShape ,String path) {
+		String line;
+		try {
+			FileReader fr = new FileReader(path);
+			BufferedReader br = new BufferedReader(fr);
+			line=br.readLine();
+			br.close();
+			fr.close();
+			
+			JsonParser jsPar = new JsonParser();
+			JsonObject jsNet= (JsonObject) jsPar.parse(line);
+			JsonArray jsShape=(JsonArray)jsNet.get("shape");
+			int[] shape= new int[jsShape.size()];
+			for(int i=0;i<jsShape.size();i++) {
+				shape[i] = jsShape.get(i).getAsInt();
+			}
+			this.createNetwork(shape);
+			JsonArray jsWeights= (JsonArray) jsNet.get("weights");
+			JsonArray jsBiases=  (JsonArray) jsNet.get("biases");
+			this.llenarB(jsBiases);
+			this.llenarW(jsWeights);
+			System.out.println("Vaya, se encontró el archivo con la red entrenada.");
+			
+		}catch(FileNotFoundException e) {
+			System.out.println("No se encontró el archivo. Se procederá a entrenar a la red.");
+			this.start(  epochs,  batchSize,  etha,  altShape);
+		}catch (IOException e) {
+			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se procederá a entrenar a la red.");
+			this.start(  epochs,  batchSize,  etha,  altShape);			
+		}catch(Exception e) {
+			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se procederá a entrenar a la red.");
+			this.start(  epochs,  batchSize,  etha,  altShape);
+		}
+	}
+	
+	private void llenarW( JsonArray jsArr) {
+		JsonArray jsW2D, jsW1D;
+		for(int i=0;i<jsArr.size();i++) {
+			jsW2D= (JsonArray) jsArr.get(i);
+			for(int j=0;j<jsW2D.size();j++) {
+				jsW1D= (JsonArray) jsW2D.get(j);
+				for(int k=0;k<jsW1D.size();k++) {
+					this.weights[i][j][k] = jsW1D.get(k).getAsDouble();
+				}
+			}
+		}
+	}
+	private void llenarB( JsonArray jsArr) {
+		JsonArray jsW1D;
+		for(int i=0;i<jsArr.size();i++) {
+			jsW1D= (JsonArray) jsArr.get(i);
+			for(int j=0;j<jsW1D.size();j++) {
+				this.biases[i][j] = jsW1D.get(j).getAsDouble();
+			}
+		}
+	}
+	
+ 	private JsonObject createJsonNet() {
+		JsonObject jsonObj = new JsonObject();
+		JsonArray wJson,bJson, wJson2D,
+				  wJson3D,bJson2D, netShapeJson;
+		netShapeJson= new JsonArray();
+		wJson= new JsonArray();
+		bJson= new JsonArray();
+		
+		for(int i = 0; i < this.netShape.length; i++) {
+			netShapeJson.add(netShape[i]);
+		}
+		for (int i = 0; i < this.weights.length; i++) {
+			wJson2D = new JsonArray();
+			for(int j=0;j<this.weights[i].length;j++) {
+				wJson3D = new JsonArray();
+				for(int k=0;k<this.weights[i][j].length;k++) {
+					wJson3D.add(this.weights[i][j][k]);
+				}
+				wJson2D.add(wJson3D);
+			}
+			wJson.add(wJson2D);
+		}
+		
+		for (int i = 0; i < this.biases.length; i++) {
+			bJson2D = new JsonArray();
+			for(int j=0;j<this.biases[i].length;j++) {
+				bJson2D.add(this.biases[i][j]);
+			}
+			bJson.add(bJson2D);
+		}
+		//Add someMoreInformationAboutNet
+		jsonObj.add("shape", netShapeJson);
+		jsonObj.add("weights", wJson);
+		jsonObj.add("biases", bJson);
+		
+		return jsonObj;
+	}
+ 	public int loadImage(String file) {
+ 		int pixel;
+		try {//LOAD EXAMPLE.
+			java.io.File imgFile = new java.io.File(file);
+			BufferedImage image = ImageIO.read(imgFile);
+			double[] entrada = new double[image.getHeight()*image.getWidth()];
+			for(int y=0;y<image.getHeight();y++) {
+				for(int x=0;x<image.getWidth();x++){
+						//pixel=255-(image.getRGB(x, y)& 0x0000FF00);
+						pixel=(image.getRGB(x, y)& 0x0000FF00);
+						entrada[(image.getHeight()-y-1)*image.getWidth()+(image.getWidth()-1-x)] = (double) pixel;
+				}
+			}
+			double[] result,resultSoft;
+			result= this.guess(entrada);
+			resultSoft=Utils.softMax(result);
+			double suma=0;
+//			for(int i=0;i<resultSoft.length;i++) {
+//				suma+=resultSoft[i];
+//				System.out.print(i+": "+resultSoft[i]+" , ");
+//			}System.out.println();
+//			System.out.println(suma);
+			return Utils.getIndexMaxNumber(resultSoft);
+			//System.out.println(entrada.length);
+		}catch(NullPointerException e) {
+			System.out.println("No se encotro la iamgen 4");
+		}catch(IOException e) {
+			System.out.println("ALGO OCURRIO AL LEER EN ALGUN LADO");
+		}catch(IllegalArgumentException e) {
+			System.out.println("ALGO ES NULO");
+		}
+		return -1;
+ 	}
+	
+	public static void main(String... args) {
+
+		Network net = new Network();
+		net.start( 30, 10, 3, new int[] {784,100,10}, "src\\cnn.txt");
+		net.saveNetwork("cnn.txt");
+		System.out.println(net.loadImage("src\\000.png"));
+		System.out.println(net.loadImage("src\\444.png"));
+		System.out.println(net.loadImage("src\\333.png"));
+		System.out.println(net.loadImage("src\\666.png"));
+		System.out.println(net.loadImage("src\\888.png"));
+		System.out.println(net.loadImage("src\\999.png"));
+		
 	}
 	
 	private static class Utils {
+		public static int getIndexMaxNumber(double[] entrada) {
+			int indx=0;
+			double max=-1;//numbers >0,
+			for(int i=0;i<entrada.length;i++) {
+				if(entrada[i]>max) {
+					max=entrada[i];
+					indx=i;
+				}
+			}
+			return indx;
+		}
+		public static double[] softMax(double[] entrada) {
+			double[] salida=new double[entrada.length];
+			double z,denominador;
+			denominador=0;
+			for(int i=0;i<salida.length;i++) {
+				z=Math.pow(Math.E, entrada[i]);
+				salida[i]=z;
+				denominador+=z;			
+			}
+			for(int i=0;i<salida.length;i++) {
+				salida[i] /=denominador;	
+			}
+			return salida;
+		}
 		public static double[] transformToArrIntY(double[] y) {
 			//This is a kind of strange function at first sight. 
 			//why transform an array of doubles into an array of doubles?
