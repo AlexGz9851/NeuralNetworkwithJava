@@ -352,10 +352,18 @@ public class Network {
 			double[] entrada = new double[image.getHeight()*image.getWidth()];
 			for(int y=0;y<image.getHeight();y++) {
 				for(int x=0;x<image.getWidth();x++){
-						//pixel=255-(image.getRGB(x, y)& 0x0000FF00);
-						pixel=(image.getRGB(x, y)& 0x0000FF00);
-						entrada[(image.getHeight()-y-1)*image.getWidth()+(image.getWidth()-1-x)] = (double) pixel;
-				}
+						pixel=255-(image.getRGB(x, y)& 0x000000FF);
+						//pixel=(image.getRGB(x, y)& 0x000000FF);
+						entrada[y*image.getWidth()+x] = (double) pixel;
+						if(pixel<10) {
+							System.out.print("00"+pixel+" ,");
+						}else if(pixel>=10 && pixel<100) {
+							System.out.print("0"+pixel+" ,");
+						}else {
+							System.out.print(pixel+" ,");
+						}
+
+				}System.out.println();
 			}
 			double[] result,resultSoft;
 			result= this.guess(entrada);
@@ -385,6 +393,7 @@ public class Network {
 		net.saveNetwork("cnn.txt");
 		System.out.println(net.loadImage("src\\000.png"));
 		System.out.println(net.loadImage("src\\444.png"));
+		System.out.println(net.loadImage("src\\222.png"));
 		System.out.println(net.loadImage("src\\333.png"));
 		System.out.println(net.loadImage("src\\666.png"));
 		System.out.println(net.loadImage("src\\888.png"));
