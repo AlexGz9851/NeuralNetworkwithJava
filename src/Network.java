@@ -187,19 +187,23 @@ public class Network {
 	}
 	
 	public void saveNetwork(String nameFile) {//name with extension "example.txt"
-		saveNetwork(nameFile,"src");
+		saveNetwork(nameFile,"");
 	}
 	
 	public void saveNetwork(String nameFile,String path) {
 		JsonObject netJson = createJsonNet();
 		try {
-			FileWriter fr = new FileWriter(path+"\\"+nameFile);
+			FileWriter fr;
+			if(path.equals(""))
+				fr = new FileWriter(nameFile);
+			else
+				fr = new FileWriter(path+"\\"+nameFile);
 			PrintWriter pw= new PrintWriter (fr);
 			pw.print(netJson);
 			pw.close();
 			fr.close();
 		}catch(IOException e){
-			System.out.println("Algo pas�. No se pudo guardar la red neuronal entrenada.");
+			System.out.println("Algo paso. No se pudo guardar la red neuronal entrenada.");
 		}
 		
 		
@@ -250,16 +254,16 @@ public class Network {
 			JsonArray jsBiases=  (JsonArray) jsNet.get("biases");
 			this.fillB(jsBiases);
 			this.fillW(jsWeights);
-			System.out.println("Vaya, se encontr� el archivo con la red entrenada.");
+			System.out.println("Vaya, se encontro el archivo con la red entrenada.");
 			
 		}catch(FileNotFoundException e) {
-			System.out.println("No se encontr� el archivo. Se proceder� a entrenar a la red.");
+			System.out.println("No se encontro el archivo. Se procedera a entrenar a la red.");
 			this.start(  epochs,  batchSize,  etha,  altShape);
 		}catch (IOException e) {
-			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se proceder� a entrenar a la red.");
+			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se procedera a entrenar a la red.");
 			this.start(  epochs,  batchSize,  etha,  altShape);			
 		}catch(Exception e) {
-			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se proceder� a entrenar a la red.");
+			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se procedera a entrenar a la red.");
 			this.start(  epochs,  batchSize,  etha,  altShape);
 		}
 	}
@@ -341,7 +345,7 @@ public class Network {
 		}catch(NullPointerException e) {
 			System.out.println("No se encotro la iamgen 4");
 		}catch(IOException e) {
-			System.out.println("ALGO OCURRIO AL LEER EN ALGUN LADO");
+			e.printStackTrace();
 		}catch(IllegalArgumentException e) {
 			System.out.println("ALGO ES NULO");
 		}
@@ -351,15 +355,15 @@ public class Network {
 	public static void main(String... args) {
 
 		Network net = new Network();
-		net.start( 30, 10, 3, new int[] {784,100,10}, "src\\cnn.json");
-		net.saveNetwork("cnn.txt");
-		System.out.println(net.loadImage("src\\000.png"));
-		System.out.println(net.loadImage("src\\444.png"));
-		System.out.println(net.loadImage("src\\222.png"));
-		System.out.println(net.loadImage("src\\333.png"));
-		System.out.println(net.loadImage("src\\666.png"));
-		System.out.println(net.loadImage("src\\888.png"));
-		System.out.println(net.loadImage("src\\999.png"));
+		net.start( 1, 10, 3, new int[] {784,100,10}, "cnn.json");
+		net.saveNetwork("cnn.json");
+		System.out.println(net.loadImage("testImages\\000.png"));
+		System.out.println(net.loadImage("testImages\\444.png"));
+		System.out.println(net.loadImage("testImages\\222.png"));
+		System.out.println(net.loadImage("testImages\\333.png"));
+		System.out.println(net.loadImage("testImages\\666.png"));
+		System.out.println(net.loadImage("testImages\\888.png"));
+		System.out.println(net.loadImage("testImages\\999.png"));
 		
 	}
 	
