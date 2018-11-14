@@ -154,12 +154,6 @@ public class Network {
 			delta = Utils.elementWiseMultipArr(Utils.dotProduct(delta, wTrans), sp);
 			deltaNablaB[deltaNablaB.length-ll] = delta;
 			deltaNablaW[deltaNablaW.length-ll] = Utils.vectorMultTo2D(delta, activations.get(activations.size()-ll-1));
-			//en vez de retornar nablaB y nablaW aqui, los modifico en este metodo.
-			//el procesamiento es secuencial.
-			// from update_mini_batch
-			//	        delta_nabla_b, delta_nabla_w = self.backprop(x, y)
-			//	        nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
-			//	        nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
 			
 			for(int i=0;i<nablaB.length;i++) {
 				nablaB[i] = Utils.sumArray(nablaB[i], deltaNablaB[i]);
@@ -173,6 +167,7 @@ public class Network {
 			
 		}
 	}
+	
 	private double [] costDerivative(double[] outputActivations,double[] y) {
 		return Utils.substractArray(outputActivations, y);
 	}
@@ -180,19 +175,21 @@ public class Network {
 	private int evaluateTest(double[][][] testData) {
 		int cont = 0;
 		for(int i = 0; i < testData.length; i++) {
-			if((int)testData[i][1][0]==Utils.maxPos(this.feedforward(testData[i][0]))){
+			if((int)testData[i][1][0]==evaluate(testData[i][0])){
 				cont++;
 			}
 		}
 		return cont;
 	}
 	
-	private int evaluate(double[] data) {
+	public int evaluate(double[] data) {
 		return Utils.maxPos(this.feedforward(data));
 	}
+	
 	public void saveNetwork(String nameFile) {//name with extension "example.txt"
 		saveNetwork(nameFile,"src");
 	}
+	
 	public void saveNetwork(String nameFile,String path) {
 		JsonObject netJson = createJsonNet();
 		try {
@@ -202,30 +199,11 @@ public class Network {
 			pw.close();
 			fr.close();
 		}catch(IOException e){
-			System.out.println("Algo pasó. No se pudo guardar la red neuronal entrenada.");
+			System.out.println("Algo pasï¿½. No se pudo guardar la red neuronal entrenada.");
 		}
 		
 		
 		
-	}
-	
-	public double[] guess(double[] image) {
-
-		ArrayList<double[]> activations = new ArrayList<>();
-		ArrayList<double[]> zs = new ArrayList<>();
-		double[] z,
-				 activation;
-		
-		activation=image;
-		activations.add(activation);
-		
-		for(int i = 0; i < this.weights.length; i++) {
-			z=Utils.sumArray(Utils.dotProduct(activation,this.weights[i]),this.biases[i]);
-			zs.add(z);
-			activation=Utils.sigmoid(z);
-			activations.add(activation);
-		}
-		return activation;
 	}
 	
 	public void start( int epochs, int batchSize, double etha,  int[] altShape ) {
@@ -250,6 +228,7 @@ public class Network {
 		
 		this.SGD(trainingData, epochs, batchSize, etha, testData);
 	}
+	
 	public void start( int epochs, int batchSize, double etha,int[] altShape ,String path) {
 		String line;
 		try {
@@ -269,23 +248,23 @@ public class Network {
 			this.createNetwork(shape);
 			JsonArray jsWeights= (JsonArray) jsNet.get("weights");
 			JsonArray jsBiases=  (JsonArray) jsNet.get("biases");
-			this.llenarB(jsBiases);
-			this.llenarW(jsWeights);
-			System.out.println("Vaya, se encontró el archivo con la red entrenada.");
+			this.fillB(jsBiases);
+			this.fillW(jsWeights);
+			System.out.println("Vaya, se encontrï¿½ el archivo con la red entrenada.");
 			
 		}catch(FileNotFoundException e) {
-			System.out.println("No se encontró el archivo. Se procederá a entrenar a la red.");
+			System.out.println("No se encontrï¿½ el archivo. Se procederï¿½ a entrenar a la red.");
 			this.start(  epochs,  batchSize,  etha,  altShape);
 		}catch (IOException e) {
-			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se procederá a entrenar a la red.");
+			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se procederï¿½ a entrenar a la red.");
 			this.start(  epochs,  batchSize,  etha,  altShape);			
 		}catch(Exception e) {
-			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se procederá a entrenar a la red.");
+			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se procederï¿½ a entrenar a la red.");
 			this.start(  epochs,  batchSize,  etha,  altShape);
 		}
 	}
 	
-	private void llenarW( JsonArray jsArr) {
+	private void fillW( JsonArray jsArr) {
 		JsonArray jsW2D, jsW1D;
 		for(int i=0;i<jsArr.size();i++) {
 			jsW2D= (JsonArray) jsArr.get(i);
@@ -297,7 +276,8 @@ public class Network {
 			}
 		}
 	}
-	private void llenarB( JsonArray jsArr) {
+	
+	private void fillB( JsonArray jsArr) {
 		JsonArray jsW1D;
 		for(int i=0;i<jsArr.size();i++) {
 			jsW1D= (JsonArray) jsArr.get(i);
@@ -344,6 +324,7 @@ public class Network {
 		
 		return jsonObj;
 	}
+ 	
  	public int loadImage(String file) {
  		int pixel;
 		try {//LOAD EXAMPLE.
@@ -353,29 +334,10 @@ public class Network {
 			for(int y=0;y<image.getHeight();y++) {
 				for(int x=0;x<image.getWidth();x++){
 						pixel=255-(image.getRGB(x, y)& 0x000000FF);
-						//pixel=(image.getRGB(x, y)& 0x000000FF);
-						entrada[y*image.getWidth()+x] = (double) pixel;
-						if(pixel<10) {
-							System.out.print("00"+pixel+" ,");
-						}else if(pixel>=10 && pixel<100) {
-							System.out.print("0"+pixel+" ,");
-						}else {
-							System.out.print(pixel+" ,");
-						}
-
-				}System.out.println();
+						entrada[y*image.getWidth()+x] = (double) pixel/255;
+				}
 			}
-			double[] result,resultSoft;
-			result= this.guess(entrada);
-			resultSoft=Utils.softMax(result);
-			double suma=0;
-//			for(int i=0;i<resultSoft.length;i++) {
-//				suma+=resultSoft[i];
-//				System.out.print(i+": "+resultSoft[i]+" , ");
-//			}System.out.println();
-//			System.out.println(suma);
-			return Utils.getIndexMaxNumber(resultSoft);
-			//System.out.println(entrada.length);
+			return this.evaluate(entrada);
 		}catch(NullPointerException e) {
 			System.out.println("No se encotro la iamgen 4");
 		}catch(IOException e) {
@@ -389,7 +351,7 @@ public class Network {
 	public static void main(String... args) {
 
 		Network net = new Network();
-		net.start( 30, 10, 3, new int[] {784,100,10}, "src\\cnn.txt");
+		net.start( 30, 10, 3, new int[] {784,100,10}, "src\\cnn.json");
 		net.saveNetwork("cnn.txt");
 		System.out.println(net.loadImage("src\\000.png"));
 		System.out.println(net.loadImage("src\\444.png"));
@@ -402,31 +364,7 @@ public class Network {
 	}
 	
 	private static class Utils {
-		public static int getIndexMaxNumber(double[] entrada) {
-			int indx=0;
-			double max=-1;//numbers >0,
-			for(int i=0;i<entrada.length;i++) {
-				if(entrada[i]>max) {
-					max=entrada[i];
-					indx=i;
-				}
-			}
-			return indx;
-		}
-		public static double[] softMax(double[] entrada) {
-			double[] salida=new double[entrada.length];
-			double z,denominador;
-			denominador=0;
-			for(int i=0;i<salida.length;i++) {
-				z=Math.pow(Math.E, entrada[i]);
-				salida[i]=z;
-				denominador+=z;			
-			}
-			for(int i=0;i<salida.length;i++) {
-				salida[i] /=denominador;	
-			}
-			return salida;
-		}
+		
 		public static double[] transformToArrIntY(double[] y) {
 			//This is a kind of strange function at first sight. 
 			//why transform an array of doubles into an array of doubles?
@@ -453,6 +391,7 @@ public class Network {
 			}
 			return answer;
 		}
+		
 		public static double [][] vectorMultTo2D(double[] a, double[] b) {
 			double[][] c;
 			c= new double[a.length][];
@@ -464,6 +403,7 @@ public class Network {
 			}
 			return c;
 		}
+		
 		public static double[] sigmoidPrime(double[] z) {
 			double answer[] = new double[z.length];
 			for(int i =0; i<z.length; i++) {
@@ -497,6 +437,7 @@ public class Network {
 			}
 			return data;
 		}
+		
 		public static double[][] trasponerMatrix(double[][] matrix){
 			double[][] res;
 			res= new double[matrix[0].length][];
@@ -508,12 +449,14 @@ public class Network {
 			}
 			return res;
 		}
+		
 		public static double[] multiplyConstant2arr(double[] a, double b) {
 			for(int i = 0; i<a.length; i++) {
 				a[i]*=b;
 			}
 			return a;
 		}
+		
 		public static double[] sumArray(double[] a, double b) {
 			for(int i = 0; i<a.length; i++) {
 				a[i]+=b;
@@ -583,7 +526,7 @@ public class Network {
 			return max;
 		}
 		
-		// Fisher–Yates shuffle
+		// Fisherï¿½Yates shuffle
 		public static <E> void randomShuffle(E[] arr) {
 		    Random rnd = new Random();
 		    for (int i = arr.length - 1; i > 0; i--)
