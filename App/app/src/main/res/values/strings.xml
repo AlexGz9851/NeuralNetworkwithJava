@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">NumberRecognizer</string>
+    <string name="title_activity_camera">CameraActivity</string>
+
+    <string name="ok">Send</string>
+    <string name="cancel">Cancel</string>
+</resources>
