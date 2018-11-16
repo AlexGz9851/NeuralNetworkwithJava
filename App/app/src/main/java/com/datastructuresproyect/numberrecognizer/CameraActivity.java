@@ -43,7 +43,7 @@ public class CameraActivity extends AppCompatActivity {
                             bmpManager.getHeight()/2-move,
                             dpBoxSize,
                             dpBoxSize
-                    ).toGrayScale().scale(28,28).changeContrast(1.5f).getBitmap();
+                    ).toGrayScale().scale(28,28).changeContrast(1.2f).getBitmap();
 
                     FragmentManager fm = getSupportFragmentManager();
 
@@ -88,4 +88,5 @@ public class CameraActivity extends AppCompatActivity {
         camera.closeCamera();
         camera.closeBackgroundThread();
     }
+
 }

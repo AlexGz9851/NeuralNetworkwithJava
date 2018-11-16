@@ -112,4 +112,14 @@ public class BitmapManager {
     public int getHeight(){
         return this.bmp.getHeight();
     }
+
+    public int[] getPixelArray() {
+        int[] pixelArray = new int[28*28];
+        for(int x = 0; x<28; x++){
+            for(int y = 0; y < 28; y++){
+                pixelArray[x*28 + y] = 255 - (this.bmp.getPixel(x,y) & 0x000000ff);
+            }
+        }
+        return pixelArray;
+    }
 }

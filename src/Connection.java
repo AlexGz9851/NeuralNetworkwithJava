@@ -6,6 +6,7 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 
@@ -19,7 +20,7 @@ public class Connection extends Thread{
     
     private double[] img;
     int salida;
-    byte[] entrada;
+    int[] entrada;
    
     public Connection(Socket socket)
     {
@@ -32,11 +33,12 @@ public class Connection extends Thread{
     {
     	try {
     		//aqui se conecta con la red neuronal, se lee archivo y asi.
-    		DataInputStream dIn = new DataInputStream(socket.getInputStream());
+    		ObjectInputStream dIn = new ObjectInputStream(socket.getInputStream());
     		int length = dIn.readInt();                    // read length of incoming message
     		if(length>0) {
-    		    entrada = new byte[length];
-    		    dIn.readFully(entrada, 0, entrada.length); // read the message
+    		    entrada = new int[length];
+    		    entrada = (int[])dIn.readObject();// read the message
+
         		while(net.isBusy()) {
         			try {
     					Thread.sleep(30);

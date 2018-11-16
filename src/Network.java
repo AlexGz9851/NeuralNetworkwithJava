@@ -17,25 +17,28 @@ import javax.imageio.ImageIO;
 
 public class Network {
 	
-//	private Layer[] layers;
 	private double[][][] weights;
 	private double[][] biases;
 	private int size;
 	private int[] netShape;
 	private static Network network=null;
 	private boolean isBusy;
+	
 	private Network() {
 		
 	}
+	
 	public static Network getInstance() 
     { 
-        if (network == null) 
+        if (network == null) {
         	network = new Network(); 
-  
+    		network.start( 20, 10, 3, new int[] {784,100,10}, "cnn.json");
+        }
         return network; 
     } 
+	
 	private void createNetwork(int[] sizes) {
-
+		this.size = sizes.length;
 		this.netShape=sizes;
 		// Initializing biases
 		// Creates an array that stores the biases (an array of doubles)
@@ -248,6 +251,7 @@ public class Network {
 	public void start( int epochs, int batchSize, double etha,int[] altShape ,String path) {
 		String line;
 		this.isBusy=true;
+		
 		try {
 			FileReader fr = new FileReader(path);
 			BufferedReader br = new BufferedReader(fr);
@@ -272,12 +276,11 @@ public class Network {
 		}catch(FileNotFoundException e) {
 			System.out.println("No se encontro el archivo. Se procedera a entrenar a la red.");
 			this.start(  epochs,  batchSize,  etha,  altShape);
-		}catch (IOException e) {
+			this.saveNetwork("cnn.json");
+		}catch (Exception e) {
 			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se procedera a entrenar a la red.");
-			this.start(  epochs,  batchSize,  etha,  altShape);			
-		}catch(Exception e) {
-			System.out.println("Hay un problema con el archivo que contiene la red entrenada. Se procedera a entrenar a la red.");
-			this.start(  epochs,  batchSize,  etha,  altShape);
+			this.start(  epochs,  batchSize,  etha,  altShape);	
+			this.saveNetwork("cnn.json");
 		}
 		this.isBusy=false;
 	}
@@ -350,19 +353,7 @@ public class Network {
 			java.io.File imgFile = new java.io.File(file);
 			BufferedImage image = ImageIO.read(imgFile);
 			double[] entrada = new double[image.getHeight()*image.getWidth()];
-			for(int y=0;y<image.getHeight();y++) {
-				for(int x=0;x<image.getWidth();x++){
-						pixel=255-(image.getRGB(x, y)& 0x000000FF);
-						entrada[y*image.getWidth()+x] = (double) pixel/255;
-						if(pixel<10) {
-							System.out.print("00"+pixel+", ");
-						}else if(10<=pixel && pixel<100) {
-							System.out.print("0"+pixel+", ");
-						}else {
-							System.out.print(""+pixel+", ");
-						}
-				}System.out.println();
-			}
+			
 			return this.evaluate(entrada);
 		}catch(NullPointerException e) {
 			System.out.println("No se encotro la iamgen 4");
@@ -378,14 +369,15 @@ public class Network {
 	public boolean isBusy() {
 		return isBusy;
 	}
+	
+	
 	public void setBusy(boolean isBusy) {
 		this.isBusy = isBusy;
 	}
+	
 	public static void main(String... args) {
 
 		Network net= Network.getInstance();
-		net.start( 20, 10, 3, new int[] {784,100,10}, "cnn.json");
-		net.saveNetwork("cnn.json");
 		System.out.println(net.loadImage("testImages\\000.png"));
 		System.out.println(net.loadImage("testImages\\444.png"));
 		System.out.println(net.loadImage("testImages\\222.png"));

@@ -2,9 +2,11 @@ package com.datastructuresproyect.numberrecognizer.Utils;
 
 import android.os.StrictMode;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class Communication {
@@ -13,30 +15,25 @@ public class Communication {
     private static Communication communication;
 
     private Communication(String ip) {
-        try {
+
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
                     .permitAll().build();
             StrictMode.setThreadPolicy(policy);
-            if (socket != null)
-                this.socket.close();
-            this.socket = new Socket(ip, 8081);
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }
+
     }
 
     public static Communication connect(String ip){
         if(communication==null)
             communication = new Communication(ip);
+        setSocket(ip);
         return communication;
     }
 
-    public void sendByteArray(byte[] bytes){
+    public void sendIntArray(int[] data){
         try {
-            DataOutputStream dOut = new DataOutputStream(socket.getOutputStream());
-            dOut.writeInt(bytes.length);
-            dOut.write(bytes);
+            ObjectOutputStream dOut = new ObjectOutputStream(socket.getOutputStream());
+            dOut.writeInt(data.length);
+            dOut.writeObject(data);
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -50,5 +47,27 @@ public class Communication {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    public void close(){
+        try {
+            if(socket!=null && !socket.isClosed())
+                this.socket.close();
+            this.socket = null;
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private static void setSocket(String ip){
+        try {
+            if(communication.socket!=null && !communication.socket.isClosed())
+                communication.socket.close();
+            communication.socket = new Socket(ip, 8081);
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
     }
 }

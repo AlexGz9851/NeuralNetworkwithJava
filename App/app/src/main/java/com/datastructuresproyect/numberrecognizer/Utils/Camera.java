@@ -45,7 +45,7 @@ public class Camera implements CameraController {
 
     private TextureView textureView;
 
-    public Camera(Context context, TextureView textureView){
+    public Camera(Context context, TextureView textureView) {
 
         this.context = context;
         this.textureView = textureView;
@@ -139,6 +139,9 @@ public class Camera implements CameraController {
             Surface previewSurface = new Surface(surfaceTexture);
             captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(previewSurface);
+
+
+
 
             cameraDevice.createCaptureSession(Collections.singletonList(previewSurface),
                     new CameraCaptureSession.StateCallback() {
