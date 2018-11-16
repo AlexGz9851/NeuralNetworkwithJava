@@ -220,8 +220,6 @@ public class Network {
 			System.out.println("Algo paso. No se pudo guardar la red neuronal entrenada.");
 		}
 		this.isBusy=false;
-		
-		
 	}
 	
 	public void start( int epochs, int batchSize, double etha,  int[] altShape ) {
@@ -352,11 +350,18 @@ public class Network {
 		try {//LOAD EXAMPLE.
 			java.io.File imgFile = new java.io.File(file);
 			BufferedImage image = ImageIO.read(imgFile);
+			
 			double[] entrada = new double[image.getHeight()*image.getWidth()];
+			for(int y=0;y<image.getHeight();y++) {
+				for(int x=0;x<image.getWidth();x++){
+						pixel=255-(image.getRGB(x, y)& 0x000000FF);
+						entrada[y*image.getWidth()+x] = (double) pixel/255;
+				}
+			}
 			
 			return this.evaluate(entrada);
 		}catch(NullPointerException e) {
-			System.out.println("No se encotro la iamgen 4");
+			System.out.println("No se encotro la imagen 4");
 		}catch(IOException e) {
 			e.printStackTrace();
 		}catch(IllegalArgumentException e) {

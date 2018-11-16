@@ -43,7 +43,7 @@ public class CameraActivity extends AppCompatActivity {
                             bmpManager.getHeight()/2-move,
                             dpBoxSize,
                             dpBoxSize
-                    ).toGrayScale().scale(28,28).changeContrast(1.2f).getBitmap();
+                    ).toGrayScale().scale(28,28).changeContrastBrightness(2f,-20).getBitmap();
 
                     FragmentManager fm = getSupportFragmentManager();
 
