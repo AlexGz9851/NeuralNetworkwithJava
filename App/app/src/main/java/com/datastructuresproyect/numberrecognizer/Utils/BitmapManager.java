@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 
 public class BitmapManager {
 
+
     private Bitmap bmp;
 
     public BitmapManager(Bitmap bmp){
@@ -23,7 +24,7 @@ public class BitmapManager {
     }
 
 
-    public BitmapManager toGrayScale(){
+    public Bitmap toGrayScale(){
         Bitmap bmpGrayscale = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bmpGrayscale);
         Paint paint = new Paint();
@@ -31,11 +32,10 @@ public class BitmapManager {
         cm.setSaturation(0);
         paint.setColorFilter(new ColorMatrixColorFilter(cm));
         c.drawBitmap(bmp, 0, 0, paint);
-        this.bmp = bmpGrayscale;
-        return this;
+        return bmpGrayscale;
     }
 
-    public BitmapManager scale(int width, int height){
+    public Bitmap scale(int width, int height){
         int originalWidth = bmp.getWidth();
         int originalHeight = bmp.getHeight();
         float scaleWidth = ((float) width) / originalWidth;
@@ -44,14 +44,13 @@ public class BitmapManager {
         matrix.postScale(scaleWidth, scaleHeight);
 
         // "RECREATE" THE NEW BITMAP
-        bmp = Bitmap.createBitmap(
+        return Bitmap.createBitmap(
                 bmp, 0, 0, originalWidth, originalHeight, matrix, false);
-        return this;
+
     }
 
-    public BitmapManager crop(int x, int y, int width, int height){
-        bmp = Bitmap.createBitmap(bmp, x,y, width,height);
-        return this;
+    public Bitmap crop(int x, int y, int width, int height){
+        return Bitmap.createBitmap(bmp, x,y, width,height);
     }
 
     /**
@@ -61,7 +60,7 @@ public class BitmapManager {
      * @param brightness -255..255 0 is default
      * @return new bitmap
      */
-    public BitmapManager changeContrastBrightness(float contrast, float brightness)
+    public Bitmap changeContrastBrightness(float contrast, float brightness)
     {
         ColorMatrix cm = new ColorMatrix(new float[]
                 {
@@ -79,11 +78,10 @@ public class BitmapManager {
         paint.setColorFilter(new ColorMatrixColorFilter(cm));
         canvas.drawBitmap(bmp, 0, 0, paint);
 
-        bmp = ret;
-        return this;
+        return ret;
     }
 
-    public BitmapManager changeContrast(float contrast) {
+    public Bitmap changeContrast(float contrast) {
         return changeContrastBrightness(contrast,0);
     }
 
@@ -114,10 +112,14 @@ public class BitmapManager {
     }
 
     public int[] getPixelArray() {
+        return this.getPixelArray(this.bmp);
+    }
+
+    public int[] getPixelArray(Bitmap bmp){
         int[] pixelArray = new int[28*28];
         for(int x = 0; x<28; x++){
             for(int y = 0; y < 28; y++){
-                pixelArray[x*28 + y] = 255 - (this.bmp.getPixel(x,y) & 0x000000ff);
+                pixelArray[x*28 + y] = 255 - (bmp.getPixel(x,y) & 0x000000ff);
             }
         }
         return pixelArray;

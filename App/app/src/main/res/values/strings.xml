@@ -4,4 +4,6 @@
 
     <string name="ok">Send</string>
     <string name="cancel">Cancel</string>
+    <string name="light">Light</string>
+    <string name="contrast">Contrast</string>
 </resources>

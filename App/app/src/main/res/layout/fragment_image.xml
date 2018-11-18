@@ -16,24 +16,69 @@
         android:layout_marginTop="10dp"/>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:id="@+id/ll_settings_container"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/image"
         android:layout_centerHorizontal="true"
+        android:orientation="vertical"
+        >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/contrast"
+            android:textAlignment="center" />
+
+        <SeekBar
+            android:id="@+id/sb_contrast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp"
+            android:progress="255"
+            android:max="510"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/light"
+            android:textAlignment="center"/>
+
+        <SeekBar
+            android:id="@+id/sb_light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp"
+            android:progress="255"
+            android:max="510"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ll_settings_container"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp">
+        android:orientation="horizontal"
+        android:gravity="center_horizontal">
 
         <Button
             android:id="@+id/btnCancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/cancel" />
+            android:text="@string/cancel"
+            />
 
         <Button
             android:id="@+id/btnOk"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/ok"/>
+            android:text="@string/ok" />
+
 
     </LinearLayout>
 

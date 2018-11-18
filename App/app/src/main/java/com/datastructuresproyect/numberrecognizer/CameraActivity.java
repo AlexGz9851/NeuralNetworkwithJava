@@ -38,12 +38,14 @@ public class CameraActivity extends AppCompatActivity {
                 try{
                     int move = dpBoxSize/2;
                     BitmapManager bmpManager = new BitmapManager(camera.getBitmap());
-                    bmpManager.crop(
+                    bmpManager.setBitmap(bmpManager.crop(
                             bmpManager.getWidth()/2-move,
                             bmpManager.getHeight()/2-move,
                             dpBoxSize,
                             dpBoxSize
-                    ).toGrayScale().scale(28,28).changeContrastBrightness(2f,-20).getBitmap();
+                    ));
+                    bmpManager.setBitmap(bmpManager.scale(28,28));
+                    bmpManager.setBitmap(bmpManager.toGrayScale());
 
                     FragmentManager fm = getSupportFragmentManager();
 
