@@ -15,15 +15,26 @@ public class BitmapManager {
 
     private Bitmap bmp;
 
+    /**
+     * Constructor that receives the bitmap as a Bitmap and sets it
+     * @param bmp
+     */
     public BitmapManager(Bitmap bmp){
         setBitmap(bmp);
     }
 
+    /**
+     * Constructor that receives the bitmap as a Byte array and sets it as a bitmap
+     * @param bytes
+     */
     public BitmapManager(byte[] bytes){
         setBitmap(bytes);
     }
 
-
+    /**
+     * Transforms new bitmap to a grayscale image
+     * @return new Bitmap
+     */
     public Bitmap toGrayScale(){
         Bitmap bmpGrayscale = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bmpGrayscale);
@@ -35,6 +46,12 @@ public class BitmapManager {
         return bmpGrayscale;
     }
 
+    /**
+     * Transforms new bitmap to the given scale
+     * @param width
+     * @param height
+     * @return new Bitmap
+     */
     public Bitmap scale(int width, int height){
         int originalWidth = bmp.getWidth();
         int originalHeight = bmp.getHeight();
@@ -49,6 +66,14 @@ public class BitmapManager {
 
     }
 
+    /**
+     * Crops a new bitmap to the given scale
+     * @param x the x position where the crop starts
+     * @param y the y position where the crop starts
+     * @param width
+     * @param height
+     * @return new Bitmap
+     */
     public Bitmap crop(int x, int y, int width, int height){
         return Bitmap.createBitmap(bmp, x,y, width,height);
     }
@@ -81,10 +106,6 @@ public class BitmapManager {
         return ret;
     }
 
-    public Bitmap changeContrast(float contrast) {
-        return changeContrastBrightness(contrast,0);
-    }
-
     public void setBitmap(Bitmap bmp){
         this.bmp=bmp;
     }
@@ -93,12 +114,20 @@ public class BitmapManager {
         this.bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
 
+    /**
+     * Gets the bitmap as bytes
+     * @return Byte[]
+     */
     public byte[] getBytes(){
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
         return stream.toByteArray();
     }
 
+    /**
+     *
+     * @return Bitmap
+     */
     public Bitmap getBitmap() {
         return bmp;
     }
@@ -115,6 +144,11 @@ public class BitmapManager {
         return this.getPixelArray(this.bmp);
     }
 
+    /**
+     * Returns a pixel array of the given Bitmap
+     * @param bmp Bitmap
+     * @return int[]
+     */
     public int[] getPixelArray(Bitmap bmp){
         int[] pixelArray = new int[28*28];
         for(int x = 0; x<28; x++){

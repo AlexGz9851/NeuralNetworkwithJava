@@ -45,6 +45,11 @@ public class Camera implements CameraController {
 
     private TextureView textureView;
 
+    /**
+     * Constructor of the camera
+     * @param context context of the app
+     * @param textureView textureview where the camera is going to display the preview
+     */
     public Camera(Context context, TextureView textureView) {
 
         this.context = context;
@@ -99,6 +104,9 @@ public class Camera implements CameraController {
         };
     }
 
+    /**
+     * Configures the camera
+     */
     public void setUpCamera() {
         try {
             for (String cameraId : cameraManager.getCameraIdList()) {
@@ -115,6 +123,9 @@ public class Camera implements CameraController {
         }
     }
 
+    /**
+     * Opens the camera
+     */
     public void openCamera() {
         try {
             if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA)
@@ -126,12 +137,18 @@ public class Camera implements CameraController {
         }
     }
 
+    /**
+     * Creates and opens the background thread that controls the camera
+     */
     public void openBackgroundThread() {
         backgroundThread = new HandlerThread("camera_background_thread");
         backgroundThread.start();
         backgroundHandler = new Handler(backgroundThread.getLooper());
     }
 
+    /**
+     * Method that configures the textureView where the camera is going to display the preview
+     */
     public void createPreviewSession() {
         try {
             SurfaceTexture surfaceTexture = textureView.getSurfaceTexture();
@@ -172,6 +189,9 @@ public class Camera implements CameraController {
         }
     }
 
+    /**
+     * Closes the camera and the capture session
+     */
     public void closeCamera() {
         if (cameraCaptureSession != null) {
             cameraCaptureSession.close();
@@ -184,6 +204,9 @@ public class Camera implements CameraController {
         }
     }
 
+    /**
+     * Closes the backgroundthread
+     */
     public void closeBackgroundThread() {
         if (backgroundHandler != null) {
             backgroundThread.quitSafely();
@@ -192,6 +215,9 @@ public class Camera implements CameraController {
         }
     }
 
+    /**
+     * Blocks the capture session so the image freezes
+     */
     public void lock() {
         try {
             cameraCaptureSession.capture(captureRequestBuilder.build(),
@@ -202,6 +228,9 @@ public class Camera implements CameraController {
         }
     }
 
+    /**
+     * Unlocks the capture session
+     */
     public void unlock() {
         try {
             cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(),
@@ -212,6 +241,7 @@ public class Camera implements CameraController {
             e.printStackTrace();
         }
     }
+
 
     public boolean viewIsAvailable(){
         return textureView.isAvailable();
