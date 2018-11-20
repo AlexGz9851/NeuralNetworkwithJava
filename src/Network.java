@@ -1,3 +1,8 @@
+// Luis Iván Morett Arévalo		   A01634417
+// Jesús Alejandro González Sánchez A00820225 
+// Network
+// Profesor: Gerardo Salinas
+
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -24,10 +29,17 @@ public class Network {
 	private static Network network=null;
 	private boolean isBusy;
 	
+	/**
+	 * Private constructor to preserve the singleton principle
+	 * 
+	 */
 	private Network() {
-		
 	}
 	
+	/**
+	 * This method always returns the unique instance of the network
+	 * @return the network
+	 */
 	public static Network getInstance() 
     { 
         if (network == null) {
@@ -37,6 +49,10 @@ public class Network {
         return network; 
     } 
 	
+	/**
+	 * This method creates the Network based on the layer sizes	
+	 * @param sizes the number of layers and number of neurons in  each layer
+	 */
 	private void createNetwork(int[] sizes) {
 		this.size = sizes.length;
 		this.netShape=sizes;
@@ -70,7 +86,12 @@ public class Network {
 		}
 		this.isBusy=false;
 	}
-	
+
+	/**
+	 * Return the output of the network
+	 * @param activation the input of the layer
+	 * @return the output
+	 */
 	private double[] feedforward(double[] activation) {
 		for(int i = 0; i<this.size-1; i++) {
 			activation = Utils.sigmoid(Utils.sumArray(Utils.dotProduct(activation, weights[i]),this.biases[i]));
@@ -78,6 +99,12 @@ public class Network {
 		return activation;
 	}
 	
+	/**
+	 * Stochastic Gradient Descent function that trains the network
+	 * @param trainingData the data used to train the network
+	 * @param batchSize the size of the mini batch used to train the network
+	 * @param etha the learning rate of the network
+	 */
 	private void SGD(double[][][] trainingData, int batchSize, double etha) {
 		Utils.randomShuffle(trainingData);
 		double[][][][] batches = new double[trainingData.length/batchSize][batchSize][][];
@@ -91,6 +118,13 @@ public class Network {
 		}
 	}
 	
+	/**
+	 * Stochastic Gradient Descent function that trains the network
+	 * @param trainingData the data used to train the network
+	 * @param epochs the number of times that the network is trained with the same data
+	 * @param batchSize the size of the mini batch used to train the network
+	 * @param etha the learning rate of the network
+	 */
 	private void SGD(double[][][] trainingData, int epochs, int batchSize, double etha) {
 		for(int i=0; i<epochs; i++) {
 			SGD(trainingData, batchSize, etha);
@@ -98,6 +132,14 @@ public class Network {
 		}
 	}
 	
+	/**
+	 * Stochastic Gradient Descent function that trains the network
+	 * @param trainingData the data used to train the network
+	 * @param epochs the number of times that the network is trained with the same data
+	 * @param batchSize the size of the mini batch used to train the network
+	 * @param etha the learning rate of the network
+	 * @param testData the data used to test the data in each epoch
+	 */
 	private void SGD(double[][][] trainingData, int epochs, int batchSize, double etha, double[][][] testData) {
 		for(int i=0; i<epochs; i++) {
 			SGD(trainingData, batchSize, etha);
@@ -105,6 +147,11 @@ public class Network {
 		}
 	}
 	
+	/**
+	 * Updates the weights and biases based on the values changed in the backprop function
+	 * @param miniBatch the minibatch used to train the network
+	 * @param etha the learning rate of the network
+	 */
 	private void updateMiniBatch(double[][][] miniBatch, double etha) {
 		double coef=etha/(double)(miniBatch.length);
 		double[][][] nablaW;
@@ -128,6 +175,13 @@ public class Network {
 		}
 	}
 
+	/**
+	 * Function used to calculate nablaW and nablaB
+	 * @param x input to the network
+	 * @param y expected value
+	 * @param nablaW the rate of change of the weight, this is expected to be an empty multidimensional array to be changed by reference
+	 * @param nablaB the rate of change of the biases, this is expected to be an empty multidimensional array to be changed by reference
+	 */
 	private void backProp(double[] x, double[] y, double[][][] nablaW, double[][] nablaB) {
 		double[] yTransf = new double[10];
 		yTransf=Utils.transformToArrIntY(y);
@@ -181,6 +235,12 @@ public class Network {
 		}
 	}
 	
+	/**
+	 * Calculates the partial cost derivative 
+	 * @param outputActivations the output of the layer
+	 * @param y the desired output
+	 * @return the cost derivative vector
+	 */
 	private double [] costDerivative(double[] outputActivations,double[] y) {
 		return Utils.substractArray(outputActivations, y);
 	}
@@ -195,14 +255,28 @@ public class Network {
 		return cont;
 	}
 	
+	/**
+	 * evaluates the input
+	 * @param data input
+	 * @return the answer from the network
+	 */
 	public int evaluate(double[] data) {
 		return Utils.maxPos(this.feedforward(data));
 	}
 	
-	public void saveNetwork(String nameFile) {//name with extension "example.txt"
+	/**
+	 * Saves the network in an external file
+	 * @param nameFile
+	 */
+	public void saveNetwork(String nameFile) {
 		saveNetwork(nameFile,"");
 	}
 	
+	/**
+	 * Saves the network in an external file
+	 * @param nameFile
+	 * @param path
+	 */
 	public void saveNetwork(String nameFile,String path) {
 		this.isBusy=true;
 		JsonObject netJson = createJsonNet();
@@ -222,6 +296,13 @@ public class Network {
 		this.isBusy=false;
 	}
 	
+	/**
+	 * Starts the network and trains it based in the params
+	 * @param epochs the number of times that the network is trained with the same data
+	 * @param batchSize the size of the mini batch used to train the network
+	 * @param etha the learning rate of the network
+	 * @param altShape the number of layers (implicit as the size of the array) and number of neurons in  each layer
+	 */
 	public void start( int epochs, int batchSize, double etha,  int[] altShape ) {
 		this.createNetwork(altShape);
 		this.isBusy=true;
@@ -246,6 +327,14 @@ public class Network {
 		this.isBusy=false;
 	}
 	
+	/**
+	 * Starts the network in case it didn't find the desired file it starts to train it with the rest of the params
+	 * @param epochs the number of times that the network is trained with the same data
+	 * @param batchSize the size of the mini batch used to train the network
+	 * @param etha the learning rate of the network
+	 * @param altShape the number of layers (implicit as the size of the array) and number of neurons in  each layer
+	 * @param path where the saved network file is supposed to be
+	 */
 	public void start( int epochs, int batchSize, double etha,int[] altShape ,String path) {
 		String line;
 		this.isBusy=true;
@@ -283,6 +372,10 @@ public class Network {
 		this.isBusy=false;
 	}
 	
+	/**
+	 * fills the weights with the JSONArray
+	 * @param jsArr the JSONArray
+	 */
 	private void fillW( JsonArray jsArr) {
 		JsonArray jsW2D, jsW1D;
 		for(int i=0;i<jsArr.size();i++) {
@@ -296,6 +389,10 @@ public class Network {
 		}
 	}
 	
+	/**
+	 * fills the biases with the JSONArray
+	 * @param jsArr the JSONArray
+	 */
 	private void fillB( JsonArray jsArr) {
 		JsonArray jsW1D;
 		for(int i=0;i<jsArr.size();i++) {
@@ -306,6 +403,10 @@ public class Network {
 		}
 	}
 	
+	/**
+	 * Creates a JSONObject based in the data in the network
+	 * @return
+	 */
  	private JsonObject createJsonNet() {
 		JsonObject jsonObj = new JsonObject();
 		JsonArray wJson,bJson, wJson2D,
@@ -344,6 +445,11 @@ public class Network {
 		return jsonObj;
 	}
  	
+ 	/**
+ 	 * Loads an image to test the network
+ 	 * @param file the image path
+ 	 * @return the output from the network
+ 	 */
  	public int loadImage(String file) {
  		int pixel;
  		this.isBusy=true;
@@ -375,13 +481,11 @@ public class Network {
 		return isBusy;
 	}
 	
-	
 	public void setBusy(boolean isBusy) {
 		this.isBusy = isBusy;
 	}
 	
 	public static void main(String... args) {
-
 		Network net= Network.getInstance();
 		System.out.println(net.loadImage("testImages\\000.png"));
 		System.out.println(net.loadImage("testImages\\444.png"));
@@ -393,6 +497,11 @@ public class Network {
 		
 	}
 	
+	/**
+	 * Auxiliary class used by the network to calculate the vector operations
+	 * @author Luis Ivan Morett Arevalo & Jesus Alejandro Gonzalez Sanchez
+	 *
+	 */
 	private static class Utils {
 		
 		public static double[] transformToArrIntY(double[] y) {

@@ -1,7 +1,7 @@
-//Luis Iván Morett Arévalo		   A01634417
-//Jesús Alejandro González Sánchez A00820225 
-//EDD Gp2
-//Profesor: Gerardo Salinas.
+// Luis Iván Morett Arévalo		   A01634417
+// Jesús Alejandro González Sánchez A00820225 
+// Connection
+// Profesor: Gerardo Salinas
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

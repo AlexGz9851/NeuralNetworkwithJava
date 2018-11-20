@@ -32,7 +32,6 @@ public class ImageFragment extends DialogFragment {
         // Required empty public constructor
     }
 
-
     public static ImageFragment newInstance(BitmapManager bmpManager, CameraController cameraController) {
         ImageFragment fragment = new ImageFragment();
         Bundle args = new Bundle();

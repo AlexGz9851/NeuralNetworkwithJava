@@ -63,8 +63,6 @@ public class CameraActivity extends AppCompatActivity {
         });
     }
 
-
-
     @Override
     protected void onResume() {
         super.onResume();
