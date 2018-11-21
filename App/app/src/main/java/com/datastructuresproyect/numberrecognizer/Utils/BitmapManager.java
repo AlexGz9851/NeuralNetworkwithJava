@@ -1,3 +1,8 @@
+// Luis Iván Morett Arévalo		   A01634417
+// Jesús Alejandro González Sánchez A00820225
+// BitmapManager
+// Profesor: Gerardo Salinas
+
 package com.datastructuresproyect.numberrecognizer.Utils;
 
 import android.graphics.Bitmap;

@@ -1,3 +1,8 @@
+// Luis Iván Morett Arévalo		   A01634417
+// Jesús Alejandro González Sánchez A00820225
+// CameraActivity
+// Profesor: Gerardo Salinas
+
 package com.datastructuresproyect.numberrecognizer;
 
 import android.os.Bundle;

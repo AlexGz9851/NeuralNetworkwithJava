@@ -1,3 +1,8 @@
+// Luis Iván Morett Arévalo		   A01634417
+// Jesús Alejandro González Sánchez A00820225
+// ImageFragment
+// Profesor: Gerardo Salinas
+
 package com.datastructuresproyect.numberrecognizer;
 
 import android.content.DialogInterface;
