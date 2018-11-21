@@ -25,10 +25,7 @@ public class CameraActivity extends AppCompatActivity {
 
         camera = new Camera(this, (TextureView) findViewById(R.id.camera_preview));
 
-
-
-        dpBoxSize =  (int) (getResources().getDimension(R.dimen.box_size) /
-                getResources().getDisplayMetrics().density) + 100;
+        dpBoxSize =  (int)getResources().getDimension(R.dimen.box_size) - 200;
 
 
         ((Button)findViewById(R.id.capture_button)).setOnClickListener(new View.OnClickListener() {
@@ -38,9 +35,11 @@ public class CameraActivity extends AppCompatActivity {
                 try{
                     int move = dpBoxSize/2;
                     BitmapManager bmpManager = new BitmapManager(camera.getBitmap());
+                    int width = bmpManager.getWidth();
+                    int height = bmpManager.getHeight();
                     bmpManager.setBitmap(bmpManager.crop(
-                            bmpManager.getWidth()/2-move,
-                            bmpManager.getHeight()/2-move,
+                            width/2-move,
+                            height/2-move,
                             dpBoxSize,
                             dpBoxSize
                     ));

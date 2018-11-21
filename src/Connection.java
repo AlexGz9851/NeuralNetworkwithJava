@@ -46,7 +46,7 @@ public class Connection extends Thread{
         		}
         		img=new double[entrada.length];
         		for(int i=0;i<entrada.length;i++) {
-        			img[i]= (double) entrada[i];
+        			img[i]= (double) entrada[i]/255;
         		}
         		salida=net.evaluate(img);
         		this.send(salida);

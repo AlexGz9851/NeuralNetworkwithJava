@@ -44,7 +44,9 @@ public class Network {
     { 
         if (network == null) {
         	network = new Network(); 
-    		network.start( 20, 10, 3, new int[] {784,100,10}, "cnn.json");
+        	String fileName = "cnn02.json";
+    		network.start( 1, 10, .2, new int[] {784,100,10}, fileName);
+    		network.saveNetwork(fileName);
         }
         return network; 
     } 
